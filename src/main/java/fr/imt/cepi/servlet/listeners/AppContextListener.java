@@ -28,7 +28,7 @@ public class AppContextListener implements ServletContextListener {
 
         try {
             DBConnectionManager connectionManager = new DBConnectionManager(dbURL +
-                    "?useLegacyDatetimeCode=false&serverTimezone=Europ/Paris", user, pwd);
+                    "?useLegacyDatetimeCode=false&serverTimezone=Europe/Paris", user, pwd);
             ctx.setAttribute("DBConnection", connectionManager.getConnection());
             System.out.println("Connection à la base de données effectuée avec succès");
         } catch (Exception e) {
