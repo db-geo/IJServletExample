@@ -1,60 +1,53 @@
 package fr.imt.cepi.servlet.listeners;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.SQLException;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.xml.DOMConfigurator;
-
-import fr.imt.cepi.util.DBConnectionManager;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @WebListener
 public class AppContextListener implements ServletContextListener {
+
+    private static HikariDataSource dataSource;
+
+    public static Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         ServletContext ctx = servletContextEvent.getServletContext();
 
-        // initialize DB Connection
-        String dbURL = ctx.getInitParameter("dbURL");
-        String user = ctx.getInitParameter("dbUser");
-        String pwd = ctx.getInitParameter("dbPassword");
+        String webAppPath = ctx.getRealPath("/");
 
+        // Initialisation du pool de connexion
         try {
-            DBConnectionManager connectionManager = new DBConnectionManager(dbURL +
-                    "?useLegacyDatetimeCode=false&serverTimezone=Europe/Paris", user, pwd);
-            ctx.setAttribute("DBConnection", connectionManager.getConnection());
-            System.out.println("Connection à la base de données effectuée avec succès");
+            HikariConfig config = new HikariConfig(webAppPath + "WEB-INF/db.properties");
+            dataSource = new HikariDataSource(config);
+            System.out.println("Connection base de données OK");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // initialize log4j
-        String log4jConfig = ctx.getInitParameter("log4j-config");
-        if (log4jConfig == null) {
-            System.err.println(
-                    "Pas de paramètre log4j-config trouvé dans le fichier web.xml : initialisation de log4j avec la configuration de base");
-            BasicConfigurator.configure();
-        } else {
-            String webAppPath = ctx.getRealPath("/");
-            String log4jProp = webAppPath + log4jConfig;
-            File log4jConfigFile = new File(log4jProp);
-            if (log4jConfigFile.exists()) {
-                System.out.println("Initialisation de log4j avec le fichier  " + log4jProp);
-                DOMConfigurator.configure(log4jProp);
-            } else {
-                System.err.println(
-                        log4jProp + " fichier non trouvé : initialisation de log4j avec la configuration de base");
-                BasicConfigurator.configure();
-            }
+        // initialisation de log4j2
+        String log4jProp = webAppPath + "WEB-INF/log4j2.xml";
+        try {
+            InputStream inputStream = new FileInputStream(log4jProp);
+            ConfigurationSource source = new ConfigurationSource(inputStream);
+            Configurator.initialize(null, source);
+            System.out.println("Configuration log4j effectuée");
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        System.out.println("log4j configuré correctement");
     }
 
     @Override

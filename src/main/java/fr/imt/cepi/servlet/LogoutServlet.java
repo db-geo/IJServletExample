@@ -1,26 +1,21 @@
 package fr.imt.cepi.servlet;
 
-import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
+import java.io.IOException;
 
-import org.apache.log4j.Logger;
-
-@WebServlet(name = "Logout", urlPatterns = { "/Logout" })
+@WebServlet("/Logout")
 public class LogoutServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	static Logger logger = Logger.getLogger(LogoutServlet.class);
+	static Logger logger = LogManager.getLogger(LogoutServlet.class);
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		response.setContentType("text/html");
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
@@ -30,13 +25,13 @@ public class LogoutServlet extends HttpServlet {
 				}
 			}
 		}
-		// invalidate the session if exists
 		HttpSession session = request.getSession(false);
-		logger.info("Utilisateur=" + session.getAttribute("utilisateur"));
 		if (session != null) {
+			logger.info("Logout de l'utilisateur " + session.getAttribute("utilisateur"));
 			session.invalidate();
 		}
-		response.sendRedirect("login.html");
+		// redirection vers la page d'accueil
+		response.sendRedirect("Login");
 	}
 
 }

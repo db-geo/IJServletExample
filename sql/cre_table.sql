@@ -8,7 +8,7 @@ CREATE USER 'tst'@'localhost' IDENTIFIED BY 'tst';
 GRANT ALL PRIVILEGES ON tst.* TO 'tst'@'localhost';
 
 -- Création de la table des utilisateurs
-CREATE TABLE tst.utilisateurs (
+CREATE TABLE tst.utilisateur (
   id int(11) NOT NULL AUTO_INCREMENT,
   nom varchar(20) NOT NULL,
   login varchar(20) NOT NULL,

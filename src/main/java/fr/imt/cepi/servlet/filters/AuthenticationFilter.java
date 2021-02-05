@@ -1,24 +1,19 @@
 package fr.imt.cepi.servlet.filters;
 
-import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 
-import org.apache.log4j.Logger;
-
-@WebFilter("/AuthenticationFilter")
+@WebFilter("/*")
 public class AuthenticationFilter implements Filter {
 
-    private final Logger logger = Logger.getLogger(AuthenticationFilter.class);
+    private final Logger logger = LogManager.getLogger(AuthenticationFilter.class);
 
     @Override
     public void init(FilterConfig fConfig) throws ServletException {
@@ -30,6 +25,7 @@ public class AuthenticationFilter implements Filter {
             throws IOException, ServletException {
 
         HttpServletRequest req = (HttpServletRequest) request;
+
         HttpServletResponse res = (HttpServletResponse) response;
 
         String uri = req.getRequestURI();
@@ -37,16 +33,15 @@ public class AuthenticationFilter implements Filter {
 
         HttpSession session = req.getSession(false);
 
-        if (session == null && !(uri.endsWith("json") || uri.endsWith("png") || uri.endsWith("html") || uri.endsWith("Login") || uri.endsWith("Register"))) {
-            logger.error("Unauthorized access request");
-            res.sendRedirect("login.html");
+        if (session == null) {
+            System.out.println("Session null");
+            // Affichage de la page de connection
+            req.getServletContext().getRequestDispatcher("/jsp/login.jsp").forward(request,response);
         } else {
             // poursuit par le prochain filtre
             chain.doFilter(request, response);
         }
-
     }
-
     @Override
     public void destroy() {
     }

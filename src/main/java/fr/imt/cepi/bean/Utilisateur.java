@@ -1,4 +1,4 @@
-package fr.imt.cepi.util;
+package fr.imt.cepi.bean;
 
 import java.io.Serializable;
 
